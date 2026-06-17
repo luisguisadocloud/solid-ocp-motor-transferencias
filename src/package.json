@@ -1,0 +1,26 @@
+{
+  "name": "solid-srp-motor-transferencias",
+  "version": "1.0.0",
+  "description": "Código del artículo: SRP aplicado a un motor de transferencias bancarias. before/ = estado anterior, after/ = con SRP aplicado.",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "eslint 'before/**/*.ts' 'after/**/*.ts' 'tests/**/*.ts'",
+    "test": "jest",
+    "test:before": "jest tests/before.test.ts",
+    "test:after": "jest tests/after.test.ts"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^24.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.0"
+  }
+}
