@@ -1,6 +1,6 @@
-# SRP aplicado a un motor de transferencias bancarias
+# SRP aplicado a un servicio de transferencias
 
-Código de ejemplo del artículo **[Principios SOLID: SRP – Principio de Responsabilidad Única](https://blog.luisguisado.cloud/principios-solid-srp-principio-de-responsabilidad-unica/)**, primero de una serie de 5 publicaciones que recorren los principios **SOLID** usando un mismo ejemplo: un servicio de procesamiento de transferencias bancarias escrito en TypeScript. La idea es partir de una clase escrita a propósito con malas prácticas de diseño, ver los dolores que genera y refactorizarla poco a poco.
+Código de ejemplo del artículo **[Principios SOLID: SRP – Principio de Responsabilidad Única](https://blog.luisguisado.cloud/principios-solid-srp-principio-de-responsabilidad-unica/)**, primero de una serie de 5 publicaciones que recorren los principios **SOLID** usando un mismo ejemplo: un servicio sencillo de procesamiento de transferencias escrito en TypeScript. La idea es partir de una clase escrita a propósito con malas prácticas de diseño, ver los dolores que genera y refactorizarla poco a poco.
 
 El repo contrasta dos estados del mismo caso de uso:
 
@@ -58,7 +58,7 @@ src/
 
 ## Serie SOLID
 
-Este es el primer artículo de una serie de 5 sobre los principios SOLID, todos apoyados en el mismo ejemplo del motor de transferencias:
+Este es el primer artículo de una serie de 5 sobre los principios SOLID, todos apoyados en el mismo ejemplo del servicio de transferencias:
 
 1. **S - SRP** · Single Responsibility Principle (este repo)
 2. **O - OCP** · Open/Closed Principle
