@@ -1,11 +1,11 @@
-# SRP aplicado a un servicio de transferencias
+# OCP aplicado a un servicio de transferencias
 
-Código de ejemplo del artículo **[Principios SOLID: SRP – Principio de Responsabilidad Única](https://blog.luisguisado.cloud/principios-solid-srp-principio-de-responsabilidad-unica/)**, primero de una serie de 5 publicaciones que recorren los principios **SOLID** usando un mismo ejemplo: un servicio sencillo de procesamiento de transferencias escrito en TypeScript. La idea es partir de una clase escrita a propósito con malas prácticas de diseño, ver los dolores que genera y refactorizarla poco a poco.
+Código de ejemplo del artículo **Principios SOLID: OCP – Principio Abierto/Cerrado**, segundo de una serie de 5 publicaciones que recorren los principios **SOLID** usando un mismo ejemplo: un servicio sencillo de procesamiento de transferencias escrito en TypeScript. Este repo parte del resultado del artículo anterior (SRP ya aplicado) y se enfoca en un único colaborador, `FeeCalculator`, para mostrar qué significa estar "abierto a extensión, cerrado a modificación".
 
 El repo contrasta dos estados del mismo caso de uso:
 
-- **`src/before/`** - un único `TransferService.execute()` que concentra cinco responsabilidades distintas: validación, cálculo de comisión, antifraude, persistencia y notificación. Un cambio en cualquiera de ellas obliga a tocar la misma clase (violación de SRP).
-- **`src/after/`** - la misma lógica, pero con cada responsabilidad extraída en su propio colaborador (`TransferValidator`, `FeeCalculator`, `FraudChecker`, `TransferRepository`, `TransferNotifier`). El `TransferService` queda como orquestador delgado del caso de uso.
+- **`src/before/`** - `TransferService` ya tiene SRP aplicado (validación, antifraude, persistencia y notificación viven en colaboradores separados), pero `FeeCalculator` resuelve la comisión con una cadena de `if/else` por `TransferType`. Agregar un nuevo tipo de transferencia obliga a modificar esa clase (violación de OCP).
+- **`src/after/`** - `FeeCalculator` delega en una lista de `FeeStrategy` (una por tipo de transferencia). Agregar soporte para billeteras digitales (`DigitalWalletFeeStrategy`) es una clase nueva: ni `FeeCalculator` ni las estrategias existentes se tocan.
 
 ## Stack
 
@@ -27,8 +27,8 @@ npm install      # o: yarn install
 
 ```bash
 npm test               # corre toda la suite
-npm run test:before    # solo el caso "before"
-npm run test:after     # solo el caso "after" (con SRP aplicado)
+npm run test:before    # solo el caso "before" (if/else cerrado a extensión)
+npm run test:after     # solo el caso "after" (con OCP aplicado)
 ```
 
 ### Type-check y lint
@@ -42,12 +42,18 @@ npm run lint     # eslint sobre before/, after/ y tests/
 
 ```
 src/
-├── before/              # versión sin SRP (todo en un método)
-│   └── transfer.service.ts
-├── after/               # versión con SRP (responsabilidades separadas)
-│   ├── transfer.service.ts   # orquestador
+├── before/                       # FeeCalculator cerrado a extensión (if/else)
+│   ├── transfer.service.ts       # orquestador
 │   ├── transfer-validator.ts
 │   ├── fee-calculator.ts
+│   ├── fraud-checker.ts
+│   ├── transfer-repository.ts
+│   └── transfer-notifier.ts
+├── after/                         # FeeCalculator abierto a extensión (Strategy)
+│   ├── transfer.service.ts
+│   ├── fee-strategy.ts           # FeeCalculator + estrategias base
+│   ├── digital-wallet-fee-strategy.ts  # extensión sin tocar código existente
+│   ├── transfer-validator.ts
 │   ├── fraud-checker.ts
 │   ├── transfer-repository.ts
 │   └── transfer-notifier.ts
@@ -58,10 +64,10 @@ src/
 
 ## Serie SOLID
 
-Este es el primer artículo de una serie de 5 sobre los principios SOLID, todos apoyados en el mismo ejemplo del servicio de transferencias:
+Este es el segundo artículo de una serie de 5 sobre los principios SOLID, todos apoyados en el mismo ejemplo del servicio de transferencias:
 
-1. **S - SRP** · Single Responsibility Principle (este repo)
-2. **O - OCP** · Open/Closed Principle
+1. **S - SRP** · Single Responsibility Principle
+2. **O - OCP** · Open/Closed Principle (este repo)
 3. **L - LSP** · Liskov Substitution Principle
 4. **I - ISP** · Interface Segregation Principle
 5. **D - DIP** · Dependency Inversion Principle
@@ -71,5 +77,3 @@ Este es el primer artículo de una serie de 5 sobre los principios SOLID, todos 
 **Luis Guisado**
 
 - Blog: [blog.luisguisado.cloud](https://blog.luisguisado.cloud)
-- Artículo origen: [Principios SOLID: SRP – Principio de Responsabilidad Única](https://blog.luisguisado.cloud/principios-solid-srp-principio-de-responsabilidad-unica/)
-

@@ -1,70 +1,28 @@
-export type TransferType = 'INTERBANK' | 'SAME_BANK' | 'INTERNATIONAL';
+import { TransferInput } from './transfer';
+import { TransferValidator } from './transfer-validator';
+import { FeeCalculator } from './fee-calculator';
+import { FraudChecker } from './fraud-checker';
+import { TransferRepository } from './transfer-repository';
+import { TransferNotifier } from './transfer-notifier';
 
-export interface TransferInput {
-  fromAccount: string;
-  toAccount: string;
-  amount: number;
-  type: TransferType;
-  customerEmail: string;
-}
-
-declare const fetch: (url: string) => Promise<{ json: () => Promise<{ risk: number }> }>;
-declare const mysql: {
-  createConnection: (cfg: object) => Promise<{
-    query: (sql: string, params: unknown[]) => Promise<void>;
-    end: () => Promise<void>;
-  }>;
-};
-declare const sendgrid: {
-  send: (msg: { to: string; subject: string; text: string }) => Promise<void>;
-};
-
+/**
+ * Caso de uso SRP: orquesta cinco colaboradores, cada uno con UNA responsabilidad.
+ */
 export class TransferService {
+  private readonly validator = new TransferValidator();
+  private readonly feeCalculator = new FeeCalculator();
+  private readonly fraudChecker = new FraudChecker();
+  private readonly repository = new TransferRepository();
+  private readonly notifier = new TransferNotifier();
+
   async execute(input: TransferInput): Promise<void> {
-    // 1. Validar el monto (responsabilidad: reglas de negocio de validación)
-    if (input.amount <= 0) throw new Error('Invalid amount');
-    if (input.amount > 50000) throw new Error('Amount exceeds limit');
+    this.validator.validate(input);
+    await this.fraudChecker.assertNotFraudulent(input);
 
-    // 2. Calcular comisión según tipo (responsabilidad: pricing)
-    let fee = 0;
-    if (input.type === 'INTERBANK') {
-      fee = input.amount * 0.005;
-    } else if (input.type === 'SAME_BANK') {
-      fee = 0;
-    } else if (input.type === 'INTERNATIONAL') {
-      fee = input.amount * 0.02 + 15;
-    }
+    const fee = this.feeCalculator.calculate(input);
+    const transfer = { ...input, fee, createdAt: new Date() };
 
-    // 3. Verificar fraude (responsabilidad: antifraude)
-    const fraudResponse = await fetch(
-      `https://fraud-api.internal/check?account=${input.fromAccount}`,
-    );
-    const fraudPayload = await fraudResponse.json();
-    if (fraudPayload.risk > 0.8) throw new Error('Fraud detected');
-
-    // 4. Persistir (responsabilidad: almacenamiento)
-    const conn = await mysql.createConnection({
-      host: 'db-prod',
-      user: 'root',
-      password: 'xxx',
-    });
-    try {
-      await conn.query(`INSERT INTO transfers VALUES (?, ?, ?, ?, ?)`, [
-        input.fromAccount,
-        input.toAccount,
-        input.amount,
-        fee,
-        new Date(),
-      ]);
-    } finally {
-      await conn.end();
-    }
-
-    // 5. Notificar (responsabilidad: comunicaciones)
-    await sendgrid.send({
-      to: input.customerEmail,
-      subject: 'Transferencia procesada',
-      text: `Tu transferencia de S/ ${input.amount} fue procesada.`,
-    });
+    await this.repository.save(transfer);
+    await this.notifier.notify(transfer);
   }
 }

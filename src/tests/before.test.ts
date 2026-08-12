@@ -1,54 +1,42 @@
-import { TransferInput, TransferService } from '../before/transfer.service';
+import { AmountExceedsLimitError, InvalidAmountError } from '../before/errors';
+import { FeeCalculator } from '../before/fee-calculator';
+import { TransferInput } from '../before/transfer';
+import { TransferValidator } from '../before/transfer-validator';
 
-// Mockeo manual de los globales declarados en before/transfer.service.ts.
-const globalAny = global as unknown as {
-  fetch: jest.Mock;
-  mysql: { createConnection: jest.Mock };
-  sendgrid: { send: jest.Mock };
+const baseInput: TransferInput = {
+  fromAccount: '194-12345',
+  toAccount: '011-98765',
+  amount: 1000,
+  type: 'INTERBANK',
+  customerEmail: 'cliente@example.com',
 };
 
-describe('TransferService (BEFORE - monolítico)', () => {
-  let mysqlConn: { query: jest.Mock; end: jest.Mock };
+describe('TransferValidator (punto de partida: SRP ya aplicado)', () => {
+  const validator = new TransferValidator();
 
-  beforeEach(() => {
-    mysqlConn = { query: jest.fn().mockResolvedValue(undefined), end: jest.fn().mockResolvedValue(undefined) };
-    globalAny.fetch = jest.fn().mockResolvedValue({ json: () => Promise.resolve({ risk: 0.1 }) });
-    globalAny.mysql = { createConnection: jest.fn().mockResolvedValue(mysqlConn) };
-    globalAny.sendgrid = { send: jest.fn().mockResolvedValue(undefined) };
+  it('acepta monto válido', () => {
+    expect(() => validator.validate(baseInput)).not.toThrow();
   });
 
-  const validInput: TransferInput = {
-    fromAccount: '194-12345',
-    toAccount: '011-98765',
-    amount: 1000,
-    type: 'INTERBANK',
-    customerEmail: 'cliente@example.com',
-  };
-
-  it('rechaza monto cero o negativo', async () => {
-    const service = new TransferService();
-    await expect(service.execute({ ...validInput, amount: 0 })).rejects.toThrow('Invalid amount');
+  it('rechaza monto cero', () => {
+    expect(() => validator.validate({ ...baseInput, amount: 0 })).toThrow(InvalidAmountError);
   });
 
-  it('rechaza monto sobre el límite', async () => {
-    const service = new TransferService();
-    await expect(service.execute({ ...validInput, amount: 100000 })).rejects.toThrow(
-      'Amount exceeds limit',
+  it('rechaza monto sobre el límite', () => {
+    expect(() => validator.validate({ ...baseInput, amount: 60000 })).toThrow(
+      AmountExceedsLimitError,
     );
   });
+});
 
-  it('rechaza cuando el riesgo de fraude es alto', async () => {
-    globalAny.fetch = jest
-      .fn()
-      .mockResolvedValue({ json: () => Promise.resolve({ risk: 0.95 }) });
-    const service = new TransferService();
-    await expect(service.execute(validInput)).rejects.toThrow('Fraud detected');
-  });
+describe('FeeCalculator (BEFORE - if/else cerrado a extensión)', () => {
+  const calculator = new FeeCalculator();
 
-  it('procesa una transferencia válida', async () => {
-    const service = new TransferService();
-    await service.execute(validInput);
-    expect(mysqlConn.query).toHaveBeenCalled();
-    expect(globalAny.sendgrid.send).toHaveBeenCalled();
+  it.each([
+    ['INTERBANK', 1000, 5],
+    ['SAME_BANK', 1000, 0],
+    ['INTERNATIONAL', 1000, 35],
+  ] as const)('calcula comisión para %s', (type, amount, expected) => {
+    expect(calculator.calculate({ ...baseInput, type, amount })).toBe(expected);
   });
 });

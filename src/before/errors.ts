@@ -18,10 +18,3 @@ export class FraudDetectedError extends Error {
     this.name = 'FraudDetectedError';
   }
 }
-
-export class UnsupportedTransferTypeError extends Error { 
-  constructor(type: string) { 
-    super(`No fee strategy supports type ${type}`);
-    this.name = 'UnsupportedTransferTypeError';
-  }
-}

@@ -1,7 +1,7 @@
 {
-  "name": "solid-srp-motor-transferencias",
+  "name": "solid-ocp-motor-transferencias",
   "version": "1.0.0",
-  "description": "Código del artículo: SRP aplicado a un motor de transferencias bancarias. before/ = estado anterior, after/ = con SRP aplicado.",
+  "description": "Código del artículo: OCP aplicado a un motor de transferencias bancarias. before/ = FeeCalculator cerrado a extensión, after/ = con Strategy pattern (OCP aplicado).",
   "private": true,
   "engines": {
     "node": ">=24"

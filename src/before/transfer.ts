@@ -1,4 +1,4 @@
-export type TransferType = 'INTERBANK' | 'SAME_BANK' | 'INTERNATIONAL' | 'WALLET';
+export type TransferType = 'INTERBANK' | 'SAME_BANK' | 'INTERNATIONAL';
 
 export interface TransferInput {
   fromAccount: string;
