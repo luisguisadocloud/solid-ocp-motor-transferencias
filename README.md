@@ -1,6 +1,6 @@
 # OCP aplicado a un servicio de transferencias
 
-Código de ejemplo del artículo **Principios SOLID: OCP – Principio Abierto/Cerrado**, segundo de una serie de 5 publicaciones que recorren los principios **SOLID** usando un mismo ejemplo: un servicio sencillo de procesamiento de transferencias escrito en TypeScript. Este repo parte del resultado del artículo anterior (SRP ya aplicado) y se enfoca en un único colaborador, `FeeCalculator`, para mostrar qué significa estar "abierto a extensión, cerrado a modificación".
+Código de ejemplo del artículo **[Principios SOLID: OCP – Principio Abierto/Cerrado](https://blog.luisguisado.cloud/principios-solid-ocp-principio-abierto-cerrado/)**, segundo de una serie de 5 publicaciones que recorren los principios **SOLID** usando un mismo ejemplo: un servicio sencillo de procesamiento de transferencias escrito en TypeScript. Este repo parte del resultado del artículo anterior (SRP ya aplicado) y se enfoca en un único colaborador, `FeeCalculator`, para mostrar qué significa estar "abierto a extensión, cerrado a modificación".
 
 El repo contrasta dos estados del mismo caso de uso:
 
@@ -77,3 +77,4 @@ Este es el segundo artículo de una serie de 5 sobre los principios SOLID, todos
 **Luis Guisado**
 
 - Blog: [blog.luisguisado.cloud](https://blog.luisguisado.cloud)
+- Artículo origen: [Principios SOLID: OCP – Principio Abierto/Cerrado](https://blog.luisguisado.cloud/principios-solid-ocp-principio-abierto-cerrado/)
